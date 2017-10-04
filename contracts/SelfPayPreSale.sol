@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.15;
 
 import './SelfPayToken.sol';
 import "./zeppelin-solidity/crowdsale/CappedCrowdsale.sol";
@@ -19,11 +19,15 @@ contract SelfPayPreSale is CappedCrowdsale, FinalizableCrowdsale {
   // Ensure the gold level bonus can only be used once
   bool public goldLevelBonusIsUsed = false;
 
-  function SelfPayPreSale(uint256 _startTime, uint256 _endTime, uint256 _rate, uint256 _goal, uint256 _cap, address _wallet)
+  //
+  address private goldLevelBonusAddress=0x0;
+
+  function SelfPayPreSale(uint256 _startTime, uint256 _endTime, uint256 _rate, uint256 _goal, uint256 _cap, address _wallet, address _goldLevelBonusAddress)
     CappedCrowdsale(_cap)
     FinalizableCrowdsale()
     Crowdsale(_startTime, _endTime, _rate, _wallet) public
   {
+    goldLevelBonusAddress = _goldLevelBonusAddress;
     // As goal needs to be met for a successful crowdsale the value needs to be less
     // than or equal than a cap which is limit for accepted funds
     require(_goal <= _cap);
@@ -42,8 +46,8 @@ contract SelfPayPreSale is CappedCrowdsale, FinalizableCrowdsale {
     // standard rate: 1 ETH : 300 SXP
     uint256 tokens_ = weiAmount.mul(rate);
 
-    // Hardcoded address of the specific gold level beneficiary
-    if (beneficiary == address(0x2157a35ce381175946d564ef64e22735286e61ea) && weiAmount >= 50 ether && !goldLevelBonusIsUsed) {
+    // Specific gold level investor
+    if (beneficiary == goldLevelBonusAddress && weiAmount >= 50 ether && weiAmount <= 100 ether && !goldLevelBonusIsUsed) {
 
       // Gold level bonus: Exclusive bonus of 100% for one specific investor
       tokens_ = tokens_.mul(200).div(100);
